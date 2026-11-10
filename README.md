@@ -47,6 +47,6 @@
 
 ## 💻 Запуск и отладка в Visual Studio
 
-1. Откройте файл **`SchoolDiary.sln`** в Visual Studio.
+1. Откройте файл **`SchoolDiary/SchoolDiary.sln`** в Visual Studio.
 2. Выберите конфигурацию **`Debug | x64`** (или `Any CPU`).
 3. Нажмите клавишу **`F5`** для запуска.
