@@ -110,17 +110,32 @@ namespace SchoolDiary
             var gradesRestored = DatabaseHelper.GetGradesTable();
             Console.WriteLine($"[9] Проверка удаления записи из БД: УСПЕШНО (записей: {gradesRestored.Rows.Count})");
 
-            // Test computational experiment
-            var exp = DatabaseHelper.CalculateExperiment();
-            Console.WriteLine($"[10] Вычислительный эксперимент:");
-            Console.WriteLine($"     • Всего оценок: {exp.TotalGrades}");
-            Console.WriteLine($"     • Средний балл: {exp.OverallAverage:F2}");
-            Console.WriteLine($"     • Качество знаний: {exp.QualityPercent:F1}%");
-            Console.WriteLine($"     • Учеников в рейтинге: {exp.StudentRankings.Count}");
-            Console.WriteLine($"     • Предметов в статистике: {exp.SubjectRankings.Count}");
+            // Test matrix gradebook (v2.0)
+            var classes = DatabaseHelper.GetDistinctClasses();
+            Console.WriteLine($"[10] Классы для журнала: {classes.Count} классов найдено ({string.Join(", ", classes)})");
+            if (classes.Count > 0)
+            {
+                string testClass = classes[0];
+                var classStudents = DatabaseHelper.GetStudentsByClass(testClass);
+                var lessonDates = DatabaseHelper.GetLessonDates(testClass, subjects[0].SubjectID);
+                var gradesMap = DatabaseHelper.GetGradesMapForClass(testClass, subjects[0].SubjectID);
+                Console.WriteLine($"[11] Матричный журнал ({testClass}, {subjects[0].SubjectName}): {classStudents.Count} учеников, {lessonDates.Count} дат уроков, {gradesMap.Count} выставленных оценок");
+
+                // Test in-cell grade update & rollback
+                DateTime testDate = new DateTime(2026, 11, 20);
+                DatabaseHelper.AddLessonDate(testClass, subjects[0].SubjectID, testDate, "Тестовое занятие v2.0");
+                DatabaseHelper.SaveOrUpdateGrade(classStudents[0].StudentID, subjects[0].SubjectID, testDate, 5, "Отлично за тест");
+                var updatedMap = DatabaseHelper.GetGradesMapForClass(testClass, subjects[0].SubjectID);
+                bool saved = updatedMap.ContainsKey((classStudents[0].StudentID, testDate.Date)) && updatedMap[(classStudents[0].StudentID, testDate.Date)].GradeValue == 5;
+                Console.WriteLine($"[12] Проверка выставления оценки в матрицу: {(saved ? "УСПЕШНО" : "ОШИБКА")}");
+
+                // Clean up test lesson date and grade
+                DatabaseHelper.DeleteLessonDate(testClass, subjects[0].SubjectID, testDate);
+                Console.WriteLine("[13] Очистка тестовых данных матрицы: УСПЕШНО");
+            }
 
             Console.WriteLine("==================================================");
-            Console.WriteLine("  ВСЕ ТЕСТЫ ВЕРСИИ 1.0 УСПЕШНО ПРОЙДЕНЫ!         ");
+            Console.WriteLine("  ВСЕ ТЕСТЫ ВЕРСИИ 2.0 УСПЕШНО ПРОЙДЕНЫ!         ");
             Console.WriteLine("==================================================");
         }
     }

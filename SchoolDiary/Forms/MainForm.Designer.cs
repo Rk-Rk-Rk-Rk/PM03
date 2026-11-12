@@ -15,10 +15,9 @@ namespace SchoolDiary.Forms
 
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.btnExitApp = new System.Windows.Forms.Button();
             this.btnSwitchUser = new System.Windows.Forms.Button();
@@ -29,16 +28,23 @@ namespace SchoolDiary.Forms
             this.dgvGrades = new System.Windows.Forms.DataGridView();
             this.pnlGradesBottom = new System.Windows.Forms.Panel();
             this.lblGradesCount = new System.Windows.Forms.Label();
-            this.btnDeleteGrade = new System.Windows.Forms.Button();
-            this.btnEditGrade = new System.Windows.Forms.Button();
-            this.btnAddGrade = new System.Windows.Forms.Button();
+            this.lblJournalHint = new System.Windows.Forms.Label();
             this.pnlGradesFilter = new System.Windows.Forms.Panel();
             this.btnRefreshGrades = new System.Windows.Forms.Button();
-            this.btnResetFilter = new System.Windows.Forms.Button();
+            this.btnDeleteLessonDate = new System.Windows.Forms.Button();
+            this.btnAddLessonDate = new System.Windows.Forms.Button();
             this.cmbFilterSubject = new System.Windows.Forms.ComboBox();
             this.lblFilterSubject = new System.Windows.Forms.Label();
-            this.cmbFilterStudent = new System.Windows.Forms.ComboBox();
-            this.lblFilterStudent = new System.Windows.Forms.Label();
+            this.cmbFilterClass = new System.Windows.Forms.ComboBox();
+            this.lblFilterClass = new System.Windows.Forms.Label();
+            this.contextMenuGrade = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuGrade5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuGrade4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuGrade3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuGrade2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuGradeSep = new System.Windows.Forms.ToolStripSeparator();
+            this.menuGradeClear = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuGradeComment = new System.Windows.Forms.ToolStripMenuItem();
             this.tabStudents = new System.Windows.Forms.TabPage();
             this.dgvStudents = new System.Windows.Forms.DataGridView();
             this.pnlStudentsBottom = new System.Windows.Forms.Panel();
@@ -56,6 +62,7 @@ namespace SchoolDiary.Forms
             ((System.ComponentModel.ISupportInitialize)(this.dgvGrades)).BeginInit();
             this.pnlGradesBottom.SuspendLayout();
             this.pnlGradesFilter.SuspendLayout();
+            this.contextMenuGrade.SuspendLayout();
             this.tabStudents.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStudents)).BeginInit();
             this.pnlStudentsBottom.SuspendLayout();
@@ -125,9 +132,9 @@ namespace SchoolDiary.Forms
             this.lblAppTitle.ForeColor = System.Drawing.Color.Black;
             this.lblAppTitle.Location = new System.Drawing.Point(15, 13);
             this.lblAppTitle.Name = "lblAppTitle";
-            this.lblAppTitle.Size = new System.Drawing.Size(225, 28);
+            this.lblAppTitle.Size = new System.Drawing.Size(265, 28);
             this.lblAppTitle.TabIndex = 0;
-            this.lblAppTitle.Text = "Электронный дневник";
+            this.lblAppTitle.Text = "Электронный дневник v2.0";
             // 
             // tabControl
             // 
@@ -152,17 +159,16 @@ namespace SchoolDiary.Forms
             this.tabGrades.Padding = new System.Windows.Forms.Padding(3);
             this.tabGrades.Size = new System.Drawing.Size(992, 594);
             this.tabGrades.TabIndex = 0;
-            this.tabGrades.Text = " Дневник и оценки ";
+            this.tabGrades.Text = " Классный журнал ";
             this.tabGrades.UseVisualStyleBackColor = true;
             // 
             // dgvGrades
             // 
             this.dgvGrades.AllowUserToAddRows = false;
             this.dgvGrades.AllowUserToDeleteRows = false;
-            this.dgvGrades.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvGrades.BackgroundColor = System.Drawing.Color.White;
             this.dgvGrades.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(235)))), ((int)(((byte)(235)))));
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
@@ -170,29 +176,31 @@ namespace SchoolDiary.Forms
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvGrades.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvGrades.ColumnHeadersHeight = 34;
+            this.dgvGrades.ColumnHeadersHeight = 36;
+            this.dgvGrades.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dgvGrades.ContextMenuStrip = this.contextMenuGrade;
             this.dgvGrades.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvGrades.EnableHeadersVisualStyles = false;
             this.dgvGrades.Location = new System.Drawing.Point(3, 53);
             this.dgvGrades.MultiSelect = false;
             this.dgvGrades.Name = "dgvGrades";
-            this.dgvGrades.ReadOnly = true;
             this.dgvGrades.RowHeadersVisible = false;
             this.dgvGrades.RowHeadersWidth = 51;
             this.dgvGrades.RowTemplate.Height = 30;
-            this.dgvGrades.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvGrades.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.dgvGrades.ShowCellToolTips = true;
             this.dgvGrades.Size = new System.Drawing.Size(986, 491);
             this.dgvGrades.TabIndex = 1;
+            this.dgvGrades.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvGrades_CellEndEdit);
             this.dgvGrades.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvGrades_CellFormatting);
-            this.dgvGrades.DoubleClick += new System.EventHandler(this.btnEditGrade_Click);
+            this.dgvGrades.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgvGrades_CellMouseDown);
+            this.dgvGrades.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dgvGrades_KeyDown);
             // 
             // pnlGradesBottom
             // 
             this.pnlGradesBottom.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
             this.pnlGradesBottom.Controls.Add(this.lblGradesCount);
-            this.pnlGradesBottom.Controls.Add(this.btnDeleteGrade);
-            this.pnlGradesBottom.Controls.Add(this.btnEditGrade);
-            this.pnlGradesBottom.Controls.Add(this.btnAddGrade);
+            this.pnlGradesBottom.Controls.Add(this.lblJournalHint);
             this.pnlGradesBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlGradesBottom.Location = new System.Drawing.Point(3, 544);
             this.pnlGradesBottom.Name = "pnlGradesBottom";
@@ -203,64 +211,35 @@ namespace SchoolDiary.Forms
             // 
             this.lblGradesCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblGradesCount.AutoSize = true;
-            this.lblGradesCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.lblGradesCount.Location = new System.Drawing.Point(790, 14);
+            this.lblGradesCount.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblGradesCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.lblGradesCount.Location = new System.Drawing.Point(540, 13);
             this.lblGradesCount.Name = "lblGradesCount";
-            this.lblGradesCount.Size = new System.Drawing.Size(123, 21);
-            this.lblGradesCount.TabIndex = 3;
-            this.lblGradesCount.Text = "Всего оценок: 0";
+            this.lblGradesCount.Size = new System.Drawing.Size(430, 21);
+            this.lblGradesCount.TabIndex = 1;
+            this.lblGradesCount.Text = "Учеников: 0 | Занятий: 0 | Средний балл класса: 0.00";
+            this.lblGradesCount.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // btnDeleteGrade
+            // lblJournalHint
             // 
-            this.btnDeleteGrade.BackColor = System.Drawing.Color.White;
-            this.btnDeleteGrade.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnDeleteGrade.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnDeleteGrade.ForeColor = System.Drawing.Color.Black;
-            this.btnDeleteGrade.Location = new System.Drawing.Point(335, 7);
-            this.btnDeleteGrade.Name = "btnDeleteGrade";
-            this.btnDeleteGrade.Size = new System.Drawing.Size(145, 34);
-            this.btnDeleteGrade.TabIndex = 2;
-            this.btnDeleteGrade.Text = "Удалить из БД";
-            this.btnDeleteGrade.UseVisualStyleBackColor = true;
-            this.btnDeleteGrade.Click += new System.EventHandler(this.btnDeleteGrade_Click);
-            // 
-            // btnEditGrade
-            // 
-            this.btnEditGrade.BackColor = System.Drawing.Color.White;
-            this.btnEditGrade.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnEditGrade.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnEditGrade.ForeColor = System.Drawing.Color.Black;
-            this.btnEditGrade.Location = new System.Drawing.Point(180, 7);
-            this.btnEditGrade.Name = "btnEditGrade";
-            this.btnEditGrade.Size = new System.Drawing.Size(145, 34);
-            this.btnEditGrade.TabIndex = 1;
-            this.btnEditGrade.Text = "Редактировать";
-            this.btnEditGrade.UseVisualStyleBackColor = true;
-            this.btnEditGrade.Click += new System.EventHandler(this.btnEditGrade_Click);
-            // 
-            // btnAddGrade
-            // 
-            this.btnAddGrade.BackColor = System.Drawing.Color.White;
-            this.btnAddGrade.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnAddGrade.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnAddGrade.ForeColor = System.Drawing.Color.Black;
-            this.btnAddGrade.Location = new System.Drawing.Point(12, 7);
-            this.btnAddGrade.Name = "btnAddGrade";
-            this.btnAddGrade.Size = new System.Drawing.Size(160, 34);
-            this.btnAddGrade.TabIndex = 0;
-            this.btnAddGrade.Text = "+ Поставить оценку";
-            this.btnAddGrade.UseVisualStyleBackColor = true;
-            this.btnAddGrade.Click += new System.EventHandler(this.btnAddGrade_Click);
+            this.lblJournalHint.AutoSize = true;
+            this.lblJournalHint.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.lblJournalHint.Location = new System.Drawing.Point(12, 13);
+            this.lblJournalHint.Name = "lblJournalHint";
+            this.lblJournalHint.Size = new System.Drawing.Size(490, 21);
+            this.lblJournalHint.TabIndex = 0;
+            this.lblJournalHint.Text = "Выберите ячейку и введите 2-5 (Del — очистить). Правый клик — меню.";
             // 
             // pnlGradesFilter
             // 
             this.pnlGradesFilter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(248)))), ((int)(((byte)(248)))));
             this.pnlGradesFilter.Controls.Add(this.btnRefreshGrades);
-            this.pnlGradesFilter.Controls.Add(this.btnResetFilter);
+            this.pnlGradesFilter.Controls.Add(this.btnDeleteLessonDate);
+            this.pnlGradesFilter.Controls.Add(this.btnAddLessonDate);
             this.pnlGradesFilter.Controls.Add(this.cmbFilterSubject);
             this.pnlGradesFilter.Controls.Add(this.lblFilterSubject);
-            this.pnlGradesFilter.Controls.Add(this.cmbFilterStudent);
-            this.pnlGradesFilter.Controls.Add(this.lblFilterStudent);
+            this.pnlGradesFilter.Controls.Add(this.cmbFilterClass);
+            this.pnlGradesFilter.Controls.Add(this.lblFilterClass);
             this.pnlGradesFilter.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlGradesFilter.Location = new System.Drawing.Point(3, 3);
             this.pnlGradesFilter.Name = "pnlGradesFilter";
@@ -271,70 +250,150 @@ namespace SchoolDiary.Forms
             // 
             this.btnRefreshGrades.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRefreshGrades.BackColor = System.Drawing.Color.White;
+            this.btnRefreshGrades.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnRefreshGrades.ForeColor = System.Drawing.Color.Black;
-            this.btnRefreshGrades.Location = new System.Drawing.Point(850, 9);
+            this.btnRefreshGrades.Location = new System.Drawing.Point(865, 9);
             this.btnRefreshGrades.Name = "btnRefreshGrades";
-            this.btnRefreshGrades.Size = new System.Drawing.Size(125, 32);
-            this.btnRefreshGrades.TabIndex = 5;
-            this.btnRefreshGrades.Text = "Обновить БД";
+            this.btnRefreshGrades.Size = new System.Drawing.Size(110, 32);
+            this.btnRefreshGrades.TabIndex = 6;
+            this.btnRefreshGrades.Text = "Обновить";
             this.btnRefreshGrades.UseVisualStyleBackColor = true;
             this.btnRefreshGrades.Click += new System.EventHandler(this.btnRefreshGrades_Click);
             // 
-            // btnResetFilter
+            // btnDeleteLessonDate
             // 
-            this.btnResetFilter.BackColor = System.Drawing.Color.White;
-            this.btnResetFilter.ForeColor = System.Drawing.Color.Black;
-            this.btnResetFilter.Location = new System.Drawing.Point(670, 9);
-            this.btnResetFilter.Name = "btnResetFilter";
-            this.btnResetFilter.Size = new System.Drawing.Size(95, 32);
-            this.btnResetFilter.TabIndex = 4;
-            this.btnResetFilter.Text = "Сброс";
-            this.btnResetFilter.UseVisualStyleBackColor = true;
-            this.btnResetFilter.Click += new System.EventHandler(this.btnResetFilter_Click);
+            this.btnDeleteLessonDate.BackColor = System.Drawing.Color.White;
+            this.btnDeleteLessonDate.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnDeleteLessonDate.ForeColor = System.Drawing.Color.Black;
+            this.btnDeleteLessonDate.Location = new System.Drawing.Point(715, 9);
+            this.btnDeleteLessonDate.Name = "btnDeleteLessonDate";
+            this.btnDeleteLessonDate.Size = new System.Drawing.Size(130, 32);
+            this.btnDeleteLessonDate.TabIndex = 5;
+            this.btnDeleteLessonDate.Text = "Удалить дату";
+            this.btnDeleteLessonDate.UseVisualStyleBackColor = true;
+            this.btnDeleteLessonDate.Click += new System.EventHandler(this.btnDeleteLessonDate_Click);
+            // 
+            // btnAddLessonDate
+            // 
+            this.btnAddLessonDate.BackColor = System.Drawing.Color.White;
+            this.btnAddLessonDate.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnAddLessonDate.ForeColor = System.Drawing.Color.Black;
+            this.btnAddLessonDate.Location = new System.Drawing.Point(555, 9);
+            this.btnAddLessonDate.Name = "btnAddLessonDate";
+            this.btnAddLessonDate.Size = new System.Drawing.Size(150, 32);
+            this.btnAddLessonDate.TabIndex = 4;
+            this.btnAddLessonDate.Text = "+ Добавить дату";
+            this.btnAddLessonDate.UseVisualStyleBackColor = true;
+            this.btnAddLessonDate.Click += new System.EventHandler(this.btnAddLessonDate_Click);
             // 
             // cmbFilterSubject
             // 
             this.cmbFilterSubject.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFilterSubject.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.cmbFilterSubject.FormattingEnabled = true;
-            this.cmbFilterSubject.Location = new System.Drawing.Point(440, 11);
+            this.cmbFilterSubject.Location = new System.Drawing.Point(280, 11);
             this.cmbFilterSubject.Name = "cmbFilterSubject";
-            this.cmbFilterSubject.Size = new System.Drawing.Size(220, 29);
+            this.cmbFilterSubject.Size = new System.Drawing.Size(260, 29);
             this.cmbFilterSubject.TabIndex = 3;
-            this.cmbFilterSubject.SelectedIndexChanged += new System.EventHandler(this.cmbFilter_SelectedIndexChanged);
+            this.cmbFilterSubject.SelectedIndexChanged += new System.EventHandler(this.cmbFilterSubject_SelectedIndexChanged);
             // 
             // lblFilterSubject
             // 
             this.lblFilterSubject.AutoSize = true;
             this.lblFilterSubject.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblFilterSubject.ForeColor = System.Drawing.Color.Black;
-            this.lblFilterSubject.Location = new System.Drawing.Point(360, 14);
+            this.lblFilterSubject.Location = new System.Drawing.Point(205, 14);
             this.lblFilterSubject.Name = "lblFilterSubject";
             this.lblFilterSubject.Size = new System.Drawing.Size(76, 21);
             this.lblFilterSubject.TabIndex = 2;
             this.lblFilterSubject.Text = "Предмет:";
             // 
-            // cmbFilterStudent
+            // cmbFilterClass
             // 
-            this.cmbFilterStudent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbFilterStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.cmbFilterStudent.FormattingEnabled = true;
-            this.cmbFilterStudent.Location = new System.Drawing.Point(85, 11);
-            this.cmbFilterStudent.Name = "cmbFilterStudent";
-            this.cmbFilterStudent.Size = new System.Drawing.Size(260, 29);
-            this.cmbFilterStudent.TabIndex = 1;
-            this.cmbFilterStudent.SelectedIndexChanged += new System.EventHandler(this.cmbFilter_SelectedIndexChanged);
+            this.cmbFilterClass.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFilterClass.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.cmbFilterClass.FormattingEnabled = true;
+            this.cmbFilterClass.Location = new System.Drawing.Point(68, 11);
+            this.cmbFilterClass.Name = "cmbFilterClass";
+            this.cmbFilterClass.Size = new System.Drawing.Size(120, 29);
+            this.cmbFilterClass.TabIndex = 1;
+            this.cmbFilterClass.SelectedIndexChanged += new System.EventHandler(this.cmbFilterClass_SelectedIndexChanged);
             // 
-            // lblFilterStudent
+            // lblFilterClass
             // 
-            this.lblFilterStudent.AutoSize = true;
-            this.lblFilterStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lblFilterStudent.ForeColor = System.Drawing.Color.Black;
-            this.lblFilterStudent.Location = new System.Drawing.Point(12, 14);
-            this.lblFilterStudent.Name = "lblFilterStudent";
-            this.lblFilterStudent.Size = new System.Drawing.Size(65, 21);
-            this.lblFilterStudent.TabIndex = 0;
-            this.lblFilterStudent.Text = "Ученик:";
+            this.lblFilterClass.AutoSize = true;
+            this.lblFilterClass.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lblFilterClass.ForeColor = System.Drawing.Color.Black;
+            this.lblFilterClass.Location = new System.Drawing.Point(12, 14);
+            this.lblFilterClass.Name = "lblFilterClass";
+            this.lblFilterClass.Size = new System.Drawing.Size(54, 21);
+            this.lblFilterClass.TabIndex = 0;
+            this.lblFilterClass.Text = "Класс:";
+            // 
+            // contextMenuGrade
+            // 
+            this.contextMenuGrade.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.contextMenuGrade.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuGrade5,
+            this.menuGrade4,
+            this.menuGrade3,
+            this.menuGrade2,
+            this.menuGradeSep,
+            this.menuGradeClear,
+            this.menuGradeComment});
+            this.contextMenuGrade.Name = "contextMenuGrade";
+            this.contextMenuGrade.Size = new System.Drawing.Size(271, 190);
+            // 
+            // menuGrade5
+            // 
+            this.menuGrade5.Name = "menuGrade5";
+            this.menuGrade5.Size = new System.Drawing.Size(270, 26);
+            this.menuGrade5.Tag = "5";
+            this.menuGrade5.Text = "Оценка 5 (Отлично)";
+            this.menuGrade5.Click += new System.EventHandler(this.menuGrade_Click);
+            // 
+            // menuGrade4
+            // 
+            this.menuGrade4.Name = "menuGrade4";
+            this.menuGrade4.Size = new System.Drawing.Size(270, 26);
+            this.menuGrade4.Tag = "4";
+            this.menuGrade4.Text = "Оценка 4 (Хорошо)";
+            this.menuGrade4.Click += new System.EventHandler(this.menuGrade_Click);
+            // 
+            // menuGrade3
+            // 
+            this.menuGrade3.Name = "menuGrade3";
+            this.menuGrade3.Size = new System.Drawing.Size(270, 26);
+            this.menuGrade3.Tag = "3";
+            this.menuGrade3.Text = "Оценка 3 (Удовлетворительно)";
+            this.menuGrade3.Click += new System.EventHandler(this.menuGrade_Click);
+            // 
+            // menuGrade2
+            // 
+            this.menuGrade2.Name = "menuGrade2";
+            this.menuGrade2.Size = new System.Drawing.Size(270, 26);
+            this.menuGrade2.Tag = "2";
+            this.menuGrade2.Text = "Оценка 2 (Неудовлетворительно)";
+            this.menuGrade2.Click += new System.EventHandler(this.menuGrade_Click);
+            // 
+            // menuGradeSep
+            // 
+            this.menuGradeSep.Name = "menuGradeSep";
+            this.menuGradeSep.Size = new System.Drawing.Size(267, 6);
+            // 
+            // menuGradeClear
+            // 
+            this.menuGradeClear.Name = "menuGradeClear";
+            this.menuGradeClear.Size = new System.Drawing.Size(270, 26);
+            this.menuGradeClear.Text = "Очистить ячейку (Del)";
+            this.menuGradeClear.Click += new System.EventHandler(this.menuGradeClear_Click);
+            // 
+            // menuGradeComment
+            // 
+            this.menuGradeComment.Name = "menuGradeComment";
+            this.menuGradeComment.Size = new System.Drawing.Size(270, 26);
+            this.menuGradeComment.Text = "Добавить примечание...";
+            this.menuGradeComment.Click += new System.EventHandler(this.menuGradeComment_Click);
             // 
             // tabStudents
             // 
@@ -346,7 +405,7 @@ namespace SchoolDiary.Forms
             this.tabStudents.Padding = new System.Windows.Forms.Padding(3);
             this.tabStudents.Size = new System.Drawing.Size(992, 594);
             this.tabStudents.TabIndex = 1;
-            this.tabStudents.Text = " Список учащихся ";
+            this.tabStudents.Text = " Список учеников ";
             this.tabStudents.UseVisualStyleBackColor = true;
             // 
             // dgvStudents
@@ -399,7 +458,7 @@ namespace SchoolDiary.Forms
             this.lblStudentsCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
             this.lblStudentsCount.Location = new System.Drawing.Point(790, 14);
             this.lblStudentsCount.Name = "lblStudentsCount";
-            this.lblStudentsCount.Size = new System.Drawing.Size(139, 21);
+            this.lblStudentsCount.Size = new System.Drawing.Size(135, 21);
             this.lblStudentsCount.TabIndex = 3;
             this.lblStudentsCount.Text = "Всего учеников: 0";
             // 
@@ -409,9 +468,9 @@ namespace SchoolDiary.Forms
             this.btnDeleteStudent.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnDeleteStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.btnDeleteStudent.ForeColor = System.Drawing.Color.Black;
-            this.btnDeleteStudent.Location = new System.Drawing.Point(340, 7);
+            this.btnDeleteStudent.Location = new System.Drawing.Point(365, 7);
             this.btnDeleteStudent.Name = "btnDeleteStudent";
-            this.btnDeleteStudent.Size = new System.Drawing.Size(145, 34);
+            this.btnDeleteStudent.Size = new System.Drawing.Size(155, 34);
             this.btnDeleteStudent.TabIndex = 2;
             this.btnDeleteStudent.Text = "Удалить из БД";
             this.btnDeleteStudent.UseVisualStyleBackColor = true;
@@ -423,9 +482,9 @@ namespace SchoolDiary.Forms
             this.btnEditStudent.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnEditStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.btnEditStudent.ForeColor = System.Drawing.Color.Black;
-            this.btnEditStudent.Location = new System.Drawing.Point(185, 7);
+            this.btnEditStudent.Location = new System.Drawing.Point(195, 7);
             this.btnEditStudent.Name = "btnEditStudent";
-            this.btnEditStudent.Size = new System.Drawing.Size(145, 34);
+            this.btnEditStudent.Size = new System.Drawing.Size(155, 34);
             this.btnEditStudent.TabIndex = 1;
             this.btnEditStudent.Text = "Редактировать";
             this.btnEditStudent.UseVisualStyleBackColor = true;
@@ -461,12 +520,13 @@ namespace SchoolDiary.Forms
             // 
             this.btnRefreshStudents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRefreshStudents.BackColor = System.Drawing.Color.White;
+            this.btnRefreshStudents.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnRefreshStudents.ForeColor = System.Drawing.Color.Black;
-            this.btnRefreshStudents.Location = new System.Drawing.Point(850, 9);
+            this.btnRefreshStudents.Location = new System.Drawing.Point(825, 9);
             this.btnRefreshStudents.Name = "btnRefreshStudents";
-            this.btnRefreshStudents.Size = new System.Drawing.Size(125, 32);
+            this.btnRefreshStudents.Size = new System.Drawing.Size(150, 32);
             this.btnRefreshStudents.TabIndex = 2;
-            this.btnRefreshStudents.Text = "Обновить БД";
+            this.btnRefreshStudents.Text = "Сброс и обновление";
             this.btnRefreshStudents.UseVisualStyleBackColor = true;
             this.btnRefreshStudents.Click += new System.EventHandler(this.btnRefreshStudents_Click);
             // 
@@ -475,8 +535,8 @@ namespace SchoolDiary.Forms
             this.txtSearchStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.txtSearchStudent.Location = new System.Drawing.Point(145, 11);
             this.txtSearchStudent.Name = "txtSearchStudent";
-            this.txtSearchStudent.PlaceholderText = "Введите фамилию или имя для фильтрации...";
-            this.txtSearchStudent.Size = new System.Drawing.Size(350, 29);
+            this.txtSearchStudent.PlaceholderText = "Введите часть ФИО или класс для фильтрации...";
+            this.txtSearchStudent.Size = new System.Drawing.Size(380, 29);
             this.txtSearchStudent.TabIndex = 1;
             this.txtSearchStudent.TextChanged += new System.EventHandler(this.txtSearchStudent_TextChanged);
             // 
@@ -485,13 +545,11 @@ namespace SchoolDiary.Forms
             this.lblSearchStudent.AutoSize = true;
             this.lblSearchStudent.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lblSearchStudent.ForeColor = System.Drawing.Color.Black;
-            this.lblSearchStudent.Location = new System.Drawing.Point(12, 14);
+            this.lblSearchStudent.Location = new System.Drawing.Point(15, 14);
             this.lblSearchStudent.Name = "lblSearchStudent";
-            this.lblSearchStudent.Size = new System.Drawing.Size(126, 21);
+            this.lblSearchStudent.Size = new System.Drawing.Size(121, 21);
             this.lblSearchStudent.TabIndex = 0;
             this.lblSearchStudent.Text = "Поиск ученика:";
-
-
             // 
             // MainForm
             // 
@@ -504,7 +562,7 @@ namespace SchoolDiary.Forms
             this.MinimumSize = new System.Drawing.Size(850, 550);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Электронный дневник";
+            this.Text = "Электронный дневник v2.0";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.pnlTop.ResumeLayout(false);
             this.pnlTop.PerformLayout();
@@ -515,6 +573,7 @@ namespace SchoolDiary.Forms
             this.pnlGradesBottom.PerformLayout();
             this.pnlGradesFilter.ResumeLayout(false);
             this.pnlGradesFilter.PerformLayout();
+            this.contextMenuGrade.ResumeLayout(false);
             this.tabStudents.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvStudents)).EndInit();
             this.pnlStudentsBottom.ResumeLayout(false);
@@ -532,18 +591,25 @@ namespace SchoolDiary.Forms
         private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage tabGrades;
         private System.Windows.Forms.Panel pnlGradesFilter;
-        private System.Windows.Forms.Label lblFilterStudent;
-        private System.Windows.Forms.ComboBox cmbFilterStudent;
+        private System.Windows.Forms.Label lblFilterClass;
+        private System.Windows.Forms.ComboBox cmbFilterClass;
         private System.Windows.Forms.Label lblFilterSubject;
         private System.Windows.Forms.ComboBox cmbFilterSubject;
-        private System.Windows.Forms.Button btnResetFilter;
+        private System.Windows.Forms.Button btnAddLessonDate;
+        private System.Windows.Forms.Button btnDeleteLessonDate;
         private System.Windows.Forms.Button btnRefreshGrades;
         private System.Windows.Forms.DataGridView dgvGrades;
         private System.Windows.Forms.Panel pnlGradesBottom;
-        private System.Windows.Forms.Button btnAddGrade;
-        private System.Windows.Forms.Button btnEditGrade;
-        private System.Windows.Forms.Button btnDeleteGrade;
+        private System.Windows.Forms.Label lblJournalHint;
         private System.Windows.Forms.Label lblGradesCount;
+        private System.Windows.Forms.ContextMenuStrip contextMenuGrade;
+        private System.Windows.Forms.ToolStripMenuItem menuGrade5;
+        private System.Windows.Forms.ToolStripMenuItem menuGrade4;
+        private System.Windows.Forms.ToolStripMenuItem menuGrade3;
+        private System.Windows.Forms.ToolStripMenuItem menuGrade2;
+        private System.Windows.Forms.ToolStripSeparator menuGradeSep;
+        private System.Windows.Forms.ToolStripMenuItem menuGradeClear;
+        private System.Windows.Forms.ToolStripMenuItem menuGradeComment;
         private System.Windows.Forms.TabPage tabStudents;
         private System.Windows.Forms.Panel pnlStudentsSearch;
         private System.Windows.Forms.Label lblSearchStudent;

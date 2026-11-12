@@ -291,6 +291,323 @@ namespace SchoolDiary
             cmd.ExecuteNonQuery();
         }
 
+        // ==================== GRADEBOOK JOURNAL (MATRIX) ====================
+
+        public static void EnsureLessonsTableExists(OleDbConnection conn)
+        {
+            try
+            {
+                var schema = conn.GetSchema("Tables");
+                bool exists = false;
+                foreach (DataRow row in schema.Rows)
+                {
+                    if (string.Equals(row["TABLE_NAME"]?.ToString(), "Lessons", StringComparison.OrdinalIgnoreCase))
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists)
+                {
+                    string sql = "CREATE TABLE [Lessons] ([LessonID] AUTOINCREMENT PRIMARY KEY, [ClassGrade] VARCHAR(50), [SubjectID] INT, [LessonDate] DATETIME, [Topic] VARCHAR(255))";
+                    using var cmd = new OleDbCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+        }
+
+        public static List<string> GetDistinctClasses()
+        {
+            var list = new List<string>();
+            using var conn = GetOpenConnection();
+            string query = "SELECT DISTINCT [ClassGrade] FROM [Students] WHERE [ClassGrade] IS NOT NULL AND [ClassGrade] <> '' ORDER BY [ClassGrade]";
+            using var cmd = new OleDbCommand(query, conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string cls = reader["ClassGrade"]?.ToString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(cls)) list.Add(cls);
+            }
+            return list;
+        }
+
+        public static List<Student> GetStudentsByClass(string classGrade)
+        {
+            var list = new List<Student>();
+            using var conn = GetOpenConnection();
+            string query = "SELECT [StudentID], [FullName], [ClassGrade], [Phone] FROM [Students] ";
+            if (!string.IsNullOrEmpty(classGrade))
+                query += " WHERE [ClassGrade] = ? ";
+            query += " ORDER BY [FullName]";
+
+            using var cmd = new OleDbCommand(query, conn);
+            if (!string.IsNullOrEmpty(classGrade))
+                cmd.Parameters.AddWithValue("?", classGrade);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(new Student
+                {
+                    StudentID = Convert.ToInt32(reader["StudentID"]),
+                    FullName = reader["FullName"]?.ToString() ?? string.Empty,
+                    ClassGrade = reader["ClassGrade"]?.ToString() ?? string.Empty,
+                    Phone = reader["Phone"]?.ToString() ?? string.Empty
+                });
+            }
+            return list;
+        }
+
+        public static List<DateTime> GetLessonDates(string classGrade, int subjectId)
+        {
+            var dates = new SortedSet<DateTime>();
+            using var conn = GetOpenConnection();
+            EnsureLessonsTableExists(conn);
+
+            // 1. From Lessons table
+            string queryLessons = "SELECT [LessonDate] FROM [Lessons] WHERE [SubjectID] = ? ";
+            if (!string.IsNullOrEmpty(classGrade))
+                queryLessons += " AND [ClassGrade] = ? ";
+
+            using (var cmd = new OleDbCommand(queryLessons, conn))
+            {
+                cmd.Parameters.AddWithValue("?", subjectId);
+                if (!string.IsNullOrEmpty(classGrade))
+                    cmd.Parameters.AddWithValue("?", classGrade);
+
+                using var r = cmd.ExecuteReader();
+                while (r.Read())
+                {
+                    if (r["LessonDate"] != DBNull.Value)
+                    {
+                        dates.Add(Convert.ToDateTime(r["LessonDate"]).Date);
+                    }
+                }
+            }
+
+            // 2. Also from Grades table
+            string queryGrades = @"SELECT DISTINCT g.[LessonDate] 
+                                   FROM [Grades] g 
+                                   INNER JOIN [Students] s ON g.[StudentID] = s.[StudentID] 
+                                   WHERE g.[SubjectID] = ? ";
+            if (!string.IsNullOrEmpty(classGrade))
+                queryGrades += " AND s.[ClassGrade] = ? ";
+
+            using (var cmd = new OleDbCommand(queryGrades, conn))
+            {
+                cmd.Parameters.AddWithValue("?", subjectId);
+                if (!string.IsNullOrEmpty(classGrade))
+                    cmd.Parameters.AddWithValue("?", classGrade);
+
+                using var r = cmd.ExecuteReader();
+                while (r.Read())
+                {
+                    if (r["LessonDate"] != DBNull.Value)
+                    {
+                        dates.Add(Convert.ToDateTime(r["LessonDate"]).Date);
+                    }
+                }
+            }
+
+            return dates.ToList();
+        }
+
+        public static void AddLessonDate(string classGrade, int subjectId, DateTime lessonDate, string topic = "Учебное занятие")
+        {
+            using var conn = GetOpenConnection();
+            EnsureLessonsTableExists(conn);
+            DateTime day = lessonDate.Date;
+
+            string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            using (var checkCmd = new OleDbCommand(check, conn))
+            {
+                checkCmd.Parameters.AddWithValue("?", classGrade);
+                checkCmd.Parameters.AddWithValue("?", subjectId);
+                checkCmd.Parameters.AddWithValue("?", day);
+                int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                if (count == 0)
+                {
+                    string insert = "INSERT INTO [Lessons] ([ClassGrade], [SubjectID], [LessonDate], [Topic]) VALUES (?, ?, ?, ?)";
+                    using var insertCmd = new OleDbCommand(insert, conn);
+                    insertCmd.Parameters.AddWithValue("?", classGrade);
+                    insertCmd.Parameters.AddWithValue("?", subjectId);
+                    insertCmd.Parameters.AddWithValue("?", day);
+                    insertCmd.Parameters.AddWithValue("?", string.IsNullOrWhiteSpace(topic) ? "Учебное занятие" : topic);
+                    insertCmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static void DeleteLessonDate(string classGrade, int subjectId, DateTime lessonDate)
+        {
+            using var conn = GetOpenConnection();
+            EnsureLessonsTableExists(conn);
+            DateTime day = lessonDate.Date;
+
+            // Delete from Lessons
+            string delLessons = "DELETE FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            using (var cmd = new OleDbCommand(delLessons, conn))
+            {
+                cmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
+                cmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                cmd.Parameters.Add("?", OleDbType.Date).Value = day;
+                cmd.ExecuteNonQuery();
+            }
+
+            // Also delete any grades for students of this class on this date
+            var studentIds = GetStudentsByClass(classGrade).Select(s => s.StudentID).ToList();
+            if (studentIds.Count > 0)
+            {
+                string idList = string.Join(",", studentIds);
+                string delGrades = $"DELETE FROM [Grades] WHERE [SubjectID] = ? AND [LessonDate] = ? AND [StudentID] IN ({idList})";
+                using var cmd = new OleDbCommand(delGrades, conn);
+                cmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                cmd.Parameters.Add("?", OleDbType.Date).Value = day;
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static Dictionary<(int StudentID, DateTime Date), (int GradeID, int GradeValue, string Comment)> GetGradesMapForClass(string classGrade, int subjectId)
+        {
+            var map = new Dictionary<(int, DateTime), (int, int, string)>();
+            using var conn = GetOpenConnection();
+            string query = @"SELECT g.[GradeID], g.[StudentID], g.[LessonDate], g.[GradeValue], g.[Comment]
+                             FROM [Grades] g
+                             INNER JOIN [Students] s ON g.[StudentID] = s.[StudentID]
+                             WHERE g.[SubjectID] = ? ";
+            if (!string.IsNullOrEmpty(classGrade))
+                query += " AND s.[ClassGrade] = ? ";
+
+            using var cmd = new OleDbCommand(query, conn);
+            cmd.Parameters.AddWithValue("?", subjectId);
+            if (!string.IsNullOrEmpty(classGrade))
+                cmd.Parameters.AddWithValue("?", classGrade);
+
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                int gId = Convert.ToInt32(r["GradeID"]);
+                int sId = Convert.ToInt32(r["StudentID"]);
+                DateTime dt = Convert.ToDateTime(r["LessonDate"]).Date;
+                int val = Convert.ToInt32(r["GradeValue"]);
+                string com = r["Comment"]?.ToString() ?? string.Empty;
+                map[(sId, dt)] = (gId, val, com);
+            }
+            return map;
+        }
+
+        public static void SaveOrUpdateGrade(int studentId, int subjectId, DateTime date, int? gradeValue, string comment = "")
+        {
+            using var conn = GetOpenConnection();
+            DateTime day = date.Date;
+
+            int existingGradeId = -1;
+            string checkQuery = "SELECT [GradeID] FROM [Grades] WHERE [StudentID] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            using (var checkCmd = new OleDbCommand(checkQuery, conn))
+            {
+                checkCmd.Parameters.AddWithValue("?", studentId);
+                checkCmd.Parameters.AddWithValue("?", subjectId);
+                checkCmd.Parameters.AddWithValue("?", day);
+                var result = checkCmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                {
+                    existingGradeId = Convert.ToInt32(result);
+                }
+            }
+
+            if (gradeValue.HasValue && gradeValue.Value >= 2 && gradeValue.Value <= 5)
+            {
+                if (existingGradeId > 0)
+                {
+                    string updateQuery = "UPDATE [Grades] SET [GradeValue] = ?, [Comment] = ? WHERE [GradeID] = ?";
+                    using var updateCmd = new OleDbCommand(updateQuery, conn);
+                    updateCmd.Parameters.AddWithValue("?", gradeValue.Value);
+                    updateCmd.Parameters.AddWithValue("?", comment ?? string.Empty);
+                    updateCmd.Parameters.AddWithValue("?", existingGradeId);
+                    updateCmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    string insertQuery = "INSERT INTO [Grades] ([StudentID], [SubjectID], [LessonDate], [GradeValue], [Comment]) VALUES (?, ?, ?, ?, ?)";
+                    using var insertCmd = new OleDbCommand(insertQuery, conn);
+                    insertCmd.Parameters.AddWithValue("?", studentId);
+                    insertCmd.Parameters.AddWithValue("?", subjectId);
+                    insertCmd.Parameters.AddWithValue("?", day);
+                    insertCmd.Parameters.AddWithValue("?", gradeValue.Value);
+                    insertCmd.Parameters.AddWithValue("?", comment ?? string.Empty);
+                    insertCmd.ExecuteNonQuery();
+                }
+
+                EnsureLessonExists(conn, studentId, subjectId, day);
+            }
+            else
+            {
+                if (existingGradeId > 0)
+                {
+                    string deleteQuery = "DELETE FROM [Grades] WHERE [GradeID] = ?";
+                    using var deleteCmd = new OleDbCommand(deleteQuery, conn);
+                    deleteCmd.Parameters.AddWithValue("?", existingGradeId);
+                    deleteCmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static void EnsureLessonExists(OleDbConnection conn, int studentId, int subjectId, DateTime date)
+        {
+            try
+            {
+                EnsureLessonsTableExists(conn);
+                string classGrade = "";
+                using (var getCmd = new OleDbCommand("SELECT [ClassGrade] FROM [Students] WHERE [StudentID] = ?", conn))
+                {
+                    getCmd.Parameters.AddWithValue("?", studentId);
+                    var obj = getCmd.ExecuteScalar();
+                    if (obj != null) classGrade = obj.ToString() ?? "";
+                }
+
+                if (!string.IsNullOrEmpty(classGrade))
+                {
+                    string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+                    using var checkCmd = new OleDbCommand(check, conn);
+                    checkCmd.Parameters.AddWithValue("?", classGrade);
+                    checkCmd.Parameters.AddWithValue("?", subjectId);
+                    checkCmd.Parameters.AddWithValue("?", date.Date);
+                    int cnt = Convert.ToInt32(checkCmd.ExecuteScalar());
+                    if (cnt == 0)
+                    {
+                        string ins = "INSERT INTO [Lessons] ([ClassGrade], [SubjectID], [LessonDate], [Topic]) VALUES (?, ?, ?, ?)";
+                        using var insCmd = new OleDbCommand(ins, conn);
+                        insCmd.Parameters.AddWithValue("?", classGrade);
+                        insCmd.Parameters.AddWithValue("?", subjectId);
+                        insCmd.Parameters.AddWithValue("?", date.Date);
+                        insCmd.Parameters.AddWithValue("?", "Учебное занятие");
+                        insCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        public static Student? FindStudentByUser(User user)
+        {
+            if (user == null || user.Role != "Ученик") return null;
+            var students = GetStudentsList();
+            string userClean = user.FullName.Replace("(Ученик)", "").Trim();
+
+            foreach (var s in students)
+            {
+                if (s.FullName.StartsWith(userClean, StringComparison.OrdinalIgnoreCase) ||
+                    userClean.StartsWith(s.FullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return s;
+                }
+            }
+
+            return students.FirstOrDefault();
+        }
+
         // ==================== COMPUTATIONAL EXPERIMENT ====================
 
         public class StudentStats
