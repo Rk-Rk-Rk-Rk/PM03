@@ -27,3 +27,7 @@ __pycache__/
 # Local scripts & assignment docs
 *.docx
 *.ps1
+
+# Publish & release archives
+publish/
+*.zip
