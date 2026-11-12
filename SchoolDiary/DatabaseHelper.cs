@@ -28,15 +28,15 @@ namespace SchoolDiary
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
 
+            // Prioritize the canonical repo Database folder so all updates persist directly in Database\SchoolDiary.accdb
             string[] candidates = new[]
             {
-                Path.Combine(baseDir, "SchoolDiary.accdb"),
-                Path.Combine(baseDir, "Database", "SchoolDiary.accdb"),
-                Path.Combine(baseDir, "..", "Database", "SchoolDiary.accdb"),
-                Path.Combine(baseDir, "..", "..", "Database", "SchoolDiary.accdb"),
+                @"C:\Users\xipwl\OneDrive\Desktop\PM03\Database\SchoolDiary.accdb",
                 Path.Combine(baseDir, "..", "..", "..", "Database", "SchoolDiary.accdb"),
                 Path.Combine(baseDir, "..", "..", "..", "..", "Database", "SchoolDiary.accdb"),
-                @"C:\Users\xipwl\OneDrive\Desktop\PM03\Database\SchoolDiary.accdb"
+                Path.Combine(baseDir, "..", "Database", "SchoolDiary.accdb"),
+                Path.Combine(baseDir, "Database", "SchoolDiary.accdb"),
+                Path.Combine(baseDir, "SchoolDiary.accdb")
             };
 
             foreach (var candidate in candidates)
@@ -56,9 +56,41 @@ namespace SchoolDiary
             return Path.Combine(baseDir, "SchoolDiary.accdb");
         }
 
+        public static void SyncDatabaseCopies()
+        {
+            try
+            {
+                string activePath = DatabasePath;
+                if (!File.Exists(activePath)) return;
+
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string localBinDb = Path.GetFullPath(Path.Combine(baseDir, "SchoolDiary.accdb"));
+                string canonicalDb = Path.GetFullPath(@"C:\Users\xipwl\OneDrive\Desktop\PM03\Database\SchoolDiary.accdb");
+
+                if (string.Equals(activePath, canonicalDb, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (File.Exists(localBinDb) && !string.Equals(activePath, localBinDb, StringComparison.OrdinalIgnoreCase))
+                    {
+                        File.Copy(activePath, localBinDb, true);
+                    }
+                }
+                else
+                {
+                    if (File.Exists(canonicalDb))
+                    {
+                        File.Copy(activePath, canonicalDb, true);
+                    }
+                }
+            }
+            catch
+            {
+                // File lock by Access UI or active process - ignore
+            }
+        }
+
         public static string GetConnectionString()
         {
-            return $"Provider={_provider};Data Source={DatabasePath};Persist Security Info=False;";
+            return $"Provider={_provider};Data Source={DatabasePath};Persist Security Info=False;Mode=Share Deny None;";
         }
 
         public static OleDbConnection GetOpenConnection()
@@ -164,6 +196,7 @@ namespace SchoolDiary
             cmd.Parameters.AddWithValue("?", student.ClassGrade);
             cmd.Parameters.AddWithValue("?", student.Phone);
             cmd.ExecuteNonQuery();
+            SyncDatabaseCopies();
         }
 
         public static void UpdateStudent(Student student)
@@ -176,6 +209,7 @@ namespace SchoolDiary
             cmd.Parameters.AddWithValue("?", student.Phone);
             cmd.Parameters.AddWithValue("?", student.StudentID);
             cmd.ExecuteNonQuery();
+            SyncDatabaseCopies();
         }
 
         public static void DeleteStudent(int studentId)
@@ -193,6 +227,7 @@ namespace SchoolDiary
                 cmdStudent.Parameters.AddWithValue("?", studentId);
                 cmdStudent.ExecuteNonQuery();
             }
+            SyncDatabaseCopies();
         }
 
         // ==================== SUBJECTS ====================
@@ -260,12 +295,13 @@ namespace SchoolDiary
             using var conn = GetOpenConnection();
             string query = "INSERT INTO [Grades] ([StudentID], [SubjectID], [LessonDate], [GradeValue], [Comment]) VALUES (?, ?, ?, ?, ?)";
             using var cmd = new OleDbCommand(query, conn);
-            cmd.Parameters.AddWithValue("?", grade.StudentID);
-            cmd.Parameters.AddWithValue("?", grade.SubjectID);
-            cmd.Parameters.AddWithValue("?", grade.LessonDate.Date);
-            cmd.Parameters.AddWithValue("?", grade.GradeValue);
-            cmd.Parameters.AddWithValue("?", grade.Comment ?? string.Empty);
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.StudentID;
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.SubjectID;
+            cmd.Parameters.Add("?", OleDbType.Date).Value = grade.LessonDate.Date;
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.GradeValue;
+            cmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = grade.Comment ?? string.Empty;
             cmd.ExecuteNonQuery();
+            SyncDatabaseCopies();
         }
 
         public static void UpdateGrade(Grade grade)
@@ -273,13 +309,14 @@ namespace SchoolDiary
             using var conn = GetOpenConnection();
             string query = "UPDATE [Grades] SET [StudentID] = ?, [SubjectID] = ?, [LessonDate] = ?, [GradeValue] = ?, [Comment] = ? WHERE [GradeID] = ?";
             using var cmd = new OleDbCommand(query, conn);
-            cmd.Parameters.AddWithValue("?", grade.StudentID);
-            cmd.Parameters.AddWithValue("?", grade.SubjectID);
-            cmd.Parameters.AddWithValue("?", grade.LessonDate.Date);
-            cmd.Parameters.AddWithValue("?", grade.GradeValue);
-            cmd.Parameters.AddWithValue("?", grade.Comment ?? string.Empty);
-            cmd.Parameters.AddWithValue("?", grade.GradeID);
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.StudentID;
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.SubjectID;
+            cmd.Parameters.Add("?", OleDbType.Date).Value = grade.LessonDate.Date;
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.GradeValue;
+            cmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = grade.Comment ?? string.Empty;
+            cmd.Parameters.Add("?", OleDbType.Integer).Value = grade.GradeID;
             cmd.ExecuteNonQuery();
+            SyncDatabaseCopies();
         }
 
         public static void DeleteGrade(int gradeId)
@@ -289,6 +326,7 @@ namespace SchoolDiary
             using var cmd = new OleDbCommand(query, conn);
             cmd.Parameters.AddWithValue("?", gradeId);
             cmd.ExecuteNonQuery();
+            SyncDatabaseCopies();
         }
 
         // ==================== GRADEBOOK JOURNAL (MATRIX) ====================
@@ -420,24 +458,25 @@ namespace SchoolDiary
             EnsureLessonsTableExists(conn);
             DateTime day = lessonDate.Date;
 
-            string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND DateValue([LessonDate]) = DateValue(?)";
             using (var checkCmd = new OleDbCommand(check, conn))
             {
-                checkCmd.Parameters.AddWithValue("?", classGrade);
-                checkCmd.Parameters.AddWithValue("?", subjectId);
-                checkCmd.Parameters.AddWithValue("?", day);
+                checkCmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
+                checkCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                checkCmd.Parameters.Add("?", OleDbType.Date).Value = day;
                 int count = Convert.ToInt32(checkCmd.ExecuteScalar());
                 if (count == 0)
                 {
                     string insert = "INSERT INTO [Lessons] ([ClassGrade], [SubjectID], [LessonDate], [Topic]) VALUES (?, ?, ?, ?)";
                     using var insertCmd = new OleDbCommand(insert, conn);
-                    insertCmd.Parameters.AddWithValue("?", classGrade);
-                    insertCmd.Parameters.AddWithValue("?", subjectId);
-                    insertCmd.Parameters.AddWithValue("?", day);
-                    insertCmd.Parameters.AddWithValue("?", string.IsNullOrWhiteSpace(topic) ? "Учебное занятие" : topic);
+                    insertCmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
+                    insertCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                    insertCmd.Parameters.Add("?", OleDbType.Date).Value = day;
+                    insertCmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = string.IsNullOrWhiteSpace(topic) ? "Учебное занятие" : topic;
                     insertCmd.ExecuteNonQuery();
                 }
             }
+            SyncDatabaseCopies();
         }
 
         public static void DeleteLessonDate(string classGrade, int subjectId, DateTime lessonDate)
@@ -447,7 +486,7 @@ namespace SchoolDiary
             DateTime day = lessonDate.Date;
 
             // Delete from Lessons
-            string delLessons = "DELETE FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            string delLessons = "DELETE FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND DateValue([LessonDate]) = DateValue(?)";
             using (var cmd = new OleDbCommand(delLessons, conn))
             {
                 cmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
@@ -461,12 +500,13 @@ namespace SchoolDiary
             if (studentIds.Count > 0)
             {
                 string idList = string.Join(",", studentIds);
-                string delGrades = $"DELETE FROM [Grades] WHERE [SubjectID] = ? AND [LessonDate] = ? AND [StudentID] IN ({idList})";
+                string delGrades = $"DELETE FROM [Grades] WHERE [SubjectID] = ? AND DateValue([LessonDate]) = DateValue(?) AND [StudentID] IN ({idList})";
                 using var cmd = new OleDbCommand(delGrades, conn);
                 cmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
                 cmd.Parameters.Add("?", OleDbType.Date).Value = day;
                 cmd.ExecuteNonQuery();
             }
+            SyncDatabaseCopies();
         }
 
         public static Dictionary<(int StudentID, DateTime Date), (int GradeID, int GradeValue, string Comment)> GetGradesMapForClass(string classGrade, int subjectId)
@@ -504,12 +544,12 @@ namespace SchoolDiary
             DateTime day = date.Date;
 
             int existingGradeId = -1;
-            string checkQuery = "SELECT [GradeID] FROM [Grades] WHERE [StudentID] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+            string checkQuery = "SELECT [GradeID] FROM [Grades] WHERE [StudentID] = ? AND [SubjectID] = ? AND DateValue([LessonDate]) = DateValue(?)";
             using (var checkCmd = new OleDbCommand(checkQuery, conn))
             {
-                checkCmd.Parameters.AddWithValue("?", studentId);
-                checkCmd.Parameters.AddWithValue("?", subjectId);
-                checkCmd.Parameters.AddWithValue("?", day);
+                checkCmd.Parameters.Add("?", OleDbType.Integer).Value = studentId;
+                checkCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                checkCmd.Parameters.Add("?", OleDbType.Date).Value = day;
                 var result = checkCmd.ExecuteScalar();
                 if (result != null && result != DBNull.Value)
                 {
@@ -523,20 +563,20 @@ namespace SchoolDiary
                 {
                     string updateQuery = "UPDATE [Grades] SET [GradeValue] = ?, [Comment] = ? WHERE [GradeID] = ?";
                     using var updateCmd = new OleDbCommand(updateQuery, conn);
-                    updateCmd.Parameters.AddWithValue("?", gradeValue.Value);
-                    updateCmd.Parameters.AddWithValue("?", comment ?? string.Empty);
-                    updateCmd.Parameters.AddWithValue("?", existingGradeId);
+                    updateCmd.Parameters.Add("?", OleDbType.Integer).Value = gradeValue.Value;
+                    updateCmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = comment ?? string.Empty;
+                    updateCmd.Parameters.Add("?", OleDbType.Integer).Value = existingGradeId;
                     updateCmd.ExecuteNonQuery();
                 }
                 else
                 {
                     string insertQuery = "INSERT INTO [Grades] ([StudentID], [SubjectID], [LessonDate], [GradeValue], [Comment]) VALUES (?, ?, ?, ?, ?)";
                     using var insertCmd = new OleDbCommand(insertQuery, conn);
-                    insertCmd.Parameters.AddWithValue("?", studentId);
-                    insertCmd.Parameters.AddWithValue("?", subjectId);
-                    insertCmd.Parameters.AddWithValue("?", day);
-                    insertCmd.Parameters.AddWithValue("?", gradeValue.Value);
-                    insertCmd.Parameters.AddWithValue("?", comment ?? string.Empty);
+                    insertCmd.Parameters.Add("?", OleDbType.Integer).Value = studentId;
+                    insertCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                    insertCmd.Parameters.Add("?", OleDbType.Date).Value = day;
+                    insertCmd.Parameters.Add("?", OleDbType.Integer).Value = gradeValue.Value;
+                    insertCmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = comment ?? string.Empty;
                     insertCmd.ExecuteNonQuery();
                 }
 
@@ -548,10 +588,11 @@ namespace SchoolDiary
                 {
                     string deleteQuery = "DELETE FROM [Grades] WHERE [GradeID] = ?";
                     using var deleteCmd = new OleDbCommand(deleteQuery, conn);
-                    deleteCmd.Parameters.AddWithValue("?", existingGradeId);
+                    deleteCmd.Parameters.Add("?", OleDbType.Integer).Value = existingGradeId;
                     deleteCmd.ExecuteNonQuery();
                 }
             }
+            SyncDatabaseCopies();
         }
 
         private static void EnsureLessonExists(OleDbConnection conn, int studentId, int subjectId, DateTime date)
@@ -562,27 +603,27 @@ namespace SchoolDiary
                 string classGrade = "";
                 using (var getCmd = new OleDbCommand("SELECT [ClassGrade] FROM [Students] WHERE [StudentID] = ?", conn))
                 {
-                    getCmd.Parameters.AddWithValue("?", studentId);
+                    getCmd.Parameters.Add("?", OleDbType.Integer).Value = studentId;
                     var obj = getCmd.ExecuteScalar();
                     if (obj != null) classGrade = obj.ToString() ?? "";
                 }
 
                 if (!string.IsNullOrEmpty(classGrade))
                 {
-                    string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND [LessonDate] = ?";
+                    string check = "SELECT COUNT(*) FROM [Lessons] WHERE [ClassGrade] = ? AND [SubjectID] = ? AND DateValue([LessonDate]) = DateValue(?)";
                     using var checkCmd = new OleDbCommand(check, conn);
-                    checkCmd.Parameters.AddWithValue("?", classGrade);
-                    checkCmd.Parameters.AddWithValue("?", subjectId);
-                    checkCmd.Parameters.AddWithValue("?", date.Date);
+                    checkCmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
+                    checkCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                    checkCmd.Parameters.Add("?", OleDbType.Date).Value = date.Date;
                     int cnt = Convert.ToInt32(checkCmd.ExecuteScalar());
                     if (cnt == 0)
                     {
                         string ins = "INSERT INTO [Lessons] ([ClassGrade], [SubjectID], [LessonDate], [Topic]) VALUES (?, ?, ?, ?)";
                         using var insCmd = new OleDbCommand(ins, conn);
-                        insCmd.Parameters.AddWithValue("?", classGrade);
-                        insCmd.Parameters.AddWithValue("?", subjectId);
-                        insCmd.Parameters.AddWithValue("?", date.Date);
-                        insCmd.Parameters.AddWithValue("?", "Учебное занятие");
+                        insCmd.Parameters.Add("?", OleDbType.VarWChar, 50).Value = classGrade;
+                        insCmd.Parameters.Add("?", OleDbType.Integer).Value = subjectId;
+                        insCmd.Parameters.Add("?", OleDbType.Date).Value = date.Date;
+                        insCmd.Parameters.Add("?", OleDbType.VarWChar, 255).Value = "Учебное занятие";
                         insCmd.ExecuteNonQuery();
                     }
                 }

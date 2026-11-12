@@ -19,7 +19,8 @@
 
   <ItemGroup>
     <None Include="..\Database\SchoolDiary.accdb" Link="SchoolDiary.accdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 

@@ -34,6 +34,13 @@ namespace SchoolDiary.Forms
         {
             InitializeComponent();
             pnlTop.Resize += (s, e) => pnlTop.Invalidate();
+            dgvGrades.Leave += (s, e) => dgvGrades.EndEdit();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            dgvGrades.EndEdit();
+            base.OnFormClosing(e);
         }
 
         /// <summary>
@@ -123,6 +130,7 @@ namespace SchoolDiary.Forms
 
         private void btnSwitchUser_Click(object sender, EventArgs e)
         {
+            dgvGrades.EndEdit();
             this.Hide();
             using var loginForm = new LoginForm();
             if (loginForm.ShowDialog() == DialogResult.OK && loginForm.AuthenticatedUser != null)
@@ -144,6 +152,7 @@ namespace SchoolDiary.Forms
 
         private void btnExitApp_Click(object? sender, EventArgs e)
         {
+            dgvGrades.EndEdit();
             Application.Exit();
         }
 
@@ -469,6 +478,7 @@ namespace SchoolDiary.Forms
                     row.Cells[e.ColumnIndex].ToolTipText = string.Empty;
                     RecalculateRowAverage(row);
                     RecalculateClassSummary();
+                    lblJournalHint.Text = $"✔ Оценка удалена из БД Access ({DateTime.Now:HH:mm:ss})";
                 }
                 catch (Exception ex)
                 {
@@ -491,6 +501,7 @@ namespace SchoolDiary.Forms
                         (!string.IsNullOrWhiteSpace(existingComment) ? $"\nПримечание: {existingComment}" : "");
                     RecalculateRowAverage(row);
                     RecalculateClassSummary();
+                    lblJournalHint.Text = $"✔ Оценка '{gradeVal}' сохранена в файл базы данных Access ({DateTime.Now:HH:mm:ss})";
                 }
                 catch (Exception ex)
                 {
@@ -532,6 +543,7 @@ namespace SchoolDiary.Forms
                     cell.ToolTipText = string.Empty;
                     RecalculateRowAverage(row);
                     RecalculateClassSummary();
+                    lblJournalHint.Text = $"✔ Оценка удалена из базы данных Access ({DateTime.Now:HH:mm:ss})";
                     e.Handled = true;
                 }
                 catch (Exception ex)
@@ -558,6 +570,7 @@ namespace SchoolDiary.Forms
                         (!string.IsNullOrWhiteSpace(existingComment) ? $"\nПримечание: {existingComment}" : "");
                     RecalculateRowAverage(row);
                     RecalculateClassSummary();
+                    lblJournalHint.Text = $"✔ Оценка '{val}' сохранена в базу данных Access ({DateTime.Now:HH:mm:ss})";
                     e.Handled = true;
                 }
                 catch (Exception ex)
@@ -648,6 +661,7 @@ namespace SchoolDiary.Forms
                     cell.Value = gradeVal.Value.ToString();
                     cell.ToolTipText = $"Дата: {lessonDate:dd.MM.yyyy}\nОценка: {gradeVal.Value}" +
                         (!string.IsNullOrWhiteSpace(existingComment) ? $"\nПримечание: {existingComment}" : "");
+                    lblJournalHint.Text = $"✔ Оценка '{gradeVal.Value}' сохранена в базу данных Access ({DateTime.Now:HH:mm:ss})";
                 }
                 else
                 {
@@ -655,6 +669,7 @@ namespace SchoolDiary.Forms
                     _gradesMap.Remove((studentId, lessonDate));
                     cell.Value = string.Empty;
                     cell.ToolTipText = string.Empty;
+                    lblJournalHint.Text = $"✔ Оценка удалена из базы данных Access ({DateTime.Now:HH:mm:ss})";
                 }
 
                 RecalculateRowAverage(row);
